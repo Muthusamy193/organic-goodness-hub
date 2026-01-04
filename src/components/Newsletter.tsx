@@ -29,11 +29,11 @@ const Newsletter = () => {
           </div>
           
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">
-            Join Our Organic Family
+            Join Dhanam Family
           </h2>
           
           <p className="text-primary-foreground/80 text-lg mt-4 max-w-xl mx-auto">
-            Subscribe to receive exclusive offers, seasonal recipes, and 15% off your first order
+            Subscribe to receive exclusive offers, traditional recipes, and 15% off your first order
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mt-8 max-w-md mx-auto">
