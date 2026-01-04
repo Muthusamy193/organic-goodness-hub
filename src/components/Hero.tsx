@@ -18,16 +18,20 @@ const Hero = () => {
             </div>
             
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight mb-6">
-              Fresh From
+              Pure & Natural
               <br />
-              <span className="text-primary">Nature's Garden</span>
+              <span className="text-primary">Traditional Foods</span>
               <br />
-              To Your Table
+              For Your Health
             </h1>
             
+            <p className="text-lg lg:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-4">
+              பாரம்பரிய உணவை நோக்கிய பயணம்
+            </p>
+            
             <p className="text-lg lg:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8">
-              Discover the finest organic produce, handpicked from sustainable farms. 
-              Pure, fresh, and delivered with care to nourish your family.
+              Discover the finest organic produce from Dhanam Organics. 
+              Pure, fresh, and delivered with care to nourish your family with traditional goodness.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">

@@ -1,4 +1,5 @@
-import { Leaf, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import dhanamLogo from "@/assets/dhanam-logo.jpeg";
 
 const Footer = () => {
   const footerLinks = {
@@ -14,16 +15,23 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <a href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-primary-foreground" />
+            <a href="/" className="flex items-center gap-3 mb-6">
+              <img 
+                src={dhanamLogo} 
+                alt="Dhanam Organics" 
+                className="h-16 w-auto object-contain bg-background rounded-full p-1"
+              />
+              <div>
+                <span className="font-display text-2xl font-semibold text-background block">
+                  Dhanam Organics
+                </span>
+                <span className="text-xs text-background/70">
+                  பாரம்பரிய உணவை நோக்கிய பயணம்
+                </span>
               </div>
-              <span className="font-display text-2xl font-semibold text-background">
-                OrganicO
-              </span>
             </a>
             <p className="text-background/70 mb-6 max-w-xs">
-              Bringing nature's finest organic produce from sustainable farms directly to your doorstep.
+              Bringing nature's finest organic produce from sustainable farms directly to your doorstep. A journey towards traditional food.
             </p>
             <div className="flex items-center gap-4">
               {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
@@ -61,12 +69,12 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-background/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-background/60 text-sm">
-            © 2026 OrganicO. All rights reserved.
+            © 2026 Dhanam Organics. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm">
             <span className="text-background/60">We accept:</span>
             <div className="flex items-center gap-2">
-              {["Visa", "Mastercard", "PayPal", "Apple Pay"].map((method) => (
+              {["Visa", "Mastercard", "PayPal", "UPI"].map((method) => (
                 <span
                   key={method}
                   className="px-3 py-1 bg-background/10 rounded text-background/80 text-xs"

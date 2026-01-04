@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ShoppingCart, Menu, X, Leaf, Search, User } from "lucide-react";
+import { ShoppingCart, Menu, X, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import dhanamLogo from "@/assets/dhanam-logo.jpeg";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,12 +19,19 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Leaf className="w-5 h-5 text-primary-foreground" />
+            <img 
+              src={dhanamLogo} 
+              alt="Dhanam Organics" 
+              className="h-12 lg:h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="hidden sm:block">
+              <span className="font-display text-xl lg:text-2xl font-semibold text-foreground leading-tight block">
+                Dhanam Organics
+              </span>
+              <span className="text-xs text-muted-foreground">
+                பாரம்பரிய உணவை நோக்கிய பயணம்
+              </span>
             </div>
-            <span className="font-display text-xl lg:text-2xl font-semibold text-foreground">
-              OrganicO
-            </span>
           </a>
 
           {/* Desktop Navigation */}
