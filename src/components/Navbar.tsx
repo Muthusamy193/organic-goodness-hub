@@ -5,6 +5,7 @@ import dhanamLogo from "@/assets/dhanam-logo.jpeg";
 import SearchModal from "./SearchModal";
 import CartDrawer from "./CartDrawer";
 import ProfileDropdown from "./ProfileDropdown";
+import { useCart } from "@/context/CartContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,7 +19,7 @@ const Navbar = () => {
     { name: "Contact", href: "#contact" },
   ];
 
-  const cartItemCount = 3;
+  const { cartCount: cartItemCount } = useCart();
 
   return (
     <>

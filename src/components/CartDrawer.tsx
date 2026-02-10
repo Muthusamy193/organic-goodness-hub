@@ -1,67 +1,16 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
-import { useState } from "react";
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-  category: string;
-}
+import { useCart } from "@/context/CartContext";
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const initialCartItems: CartItem[] = [
-  {
-    id: 1,
-    name: "Organic Avocados",
-    price: 580,
-    quantity: 2,
-    image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=100&h=100&fit=crop",
-    category: "Fruits",
-  },
-  {
-    id: 2,
-    name: "Fresh Spinach Bundle",
-    price: 290,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=100&h=100&fit=crop",
-    category: "Vegetables",
-  },
-  {
-    id: 3,
-    name: "Organic Honey",
-    price: 1079,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=100&h=100&fit=crop",
-    category: "Pantry",
-  },
-];
-
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const { cartItems, updateQuantity, removeItem, subtotal } = useCart();
 
-  const updateQuantity = (id: number, change: number) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
-  };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
 
@@ -141,7 +90,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                 </div>
                 {shipping > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Add ₹{500 - subtotal} more for free shipping
+                    Add ₹{(500 - subtotal).toFixed(0)} more for free shipping
                   </p>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
