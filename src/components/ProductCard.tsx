@@ -1,5 +1,7 @@
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   name: string;
@@ -20,6 +22,19 @@ const ProductCard = ({
   isOrganic = true,
   rating,
 }: ProductCardProps) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: name.toLowerCase().replace(/\s+/g, "-"),
+      name,
+      price,
+      image,
+      category,
+    });
+    toast.success(`${name} added to cart!`);
+  };
+
   return (
     <div className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-hover transition-all duration-300 hover:-translate-y-1">
       {/* Image Container */}
@@ -51,7 +66,7 @@ const ProductCard = ({
 
         {/* Quick Add Button */}
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button variant="cart" size="lg" className="w-full">
+          <Button variant="cart" size="lg" className="w-full" onClick={handleAddToCart}>
             <ShoppingCart className="w-4 h-4" />
             Add to Cart
           </Button>
