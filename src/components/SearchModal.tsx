@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, ArrowLeft, ShoppingCart, Star } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface SearchModalProps {
@@ -46,6 +48,8 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const query = searchQuery.toLowerCase();
 
@@ -62,6 +66,12 @@ const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     : [];
 
   const handleAddToCart = (product: Product) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add items to cart");
+      handleClose();
+      navigate("/login");
+      return;
+    }
     addToCart({
       id: product.name.toLowerCase().replace(/\s+/g, "-"),
       name: product.name,
