@@ -1,6 +1,8 @@
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -23,8 +25,15 @@ const ProductCard = ({
   rating,
 }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add items to cart");
+      navigate("/login");
+      return;
+    }
     addToCart({
       id: name.toLowerCase().replace(/\s+/g, "-"),
       name,
@@ -95,10 +104,10 @@ const ProductCard = ({
         </div>
 
         <div className="flex items-center gap-2 mt-3">
-          <span className="font-bold text-xl text-foreground">${price.toFixed(2)}</span>
+          <span className="font-bold text-xl text-foreground">₹{(price * 83).toFixed(0)}</span>
           {originalPrice && (
             <span className="text-muted-foreground line-through text-sm">
-              ${originalPrice.toFixed(2)}
+              ₹{(originalPrice * 83).toFixed(0)}
             </span>
           )}
         </div>

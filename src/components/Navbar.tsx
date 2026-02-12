@@ -6,6 +6,8 @@ import SearchModal from "./SearchModal";
 import CartDrawer from "./CartDrawer";
 import ProfileDropdown from "./ProfileDropdown";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +22,8 @@ const Navbar = () => {
   ];
 
   const { cartCount: cartItemCount } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -130,9 +134,11 @@ const Navbar = () => {
                   </a>
                 ))}
                 <div className="pt-4 border-t border-border">
-                  <Button variant="hero" className="w-full">
-                    Sign In / Register
-                  </Button>
+                  {!isAuthenticated && (
+                    <Button variant="hero" className="w-full" onClick={() => { setIsMenuOpen(false); navigate("/login"); }}>
+                      Sign In / Register
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
