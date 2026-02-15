@@ -1,74 +1,67 @@
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard";
+import ProductDetailModal from "./ProductDetailModal";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
-
-const products = [
-  {
-    name: "Organic Avocados",
-    price: 6.99,
-    originalPrice: 8.99,
-    image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&h=400&fit=crop",
-    category: "Fruits",
-    rating: 5,
-  },
-  {
-    name: "Fresh Spinach Bundle",
-    price: 3.49,
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&h=400&fit=crop",
-    category: "Vegetables",
-    rating: 4,
-  },
-  {
-    name: "Organic Honey",
-    price: 12.99,
-    image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&h=400&fit=crop",
-    category: "Pantry",
-    rating: 5,
-  },
-  {
-    name: "Free-Range Eggs",
-    price: 7.49,
-    image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=400&fit=crop",
-    category: "Dairy & Eggs",
-    rating: 5,
-  },
-  {
-    name: "Mixed Berry Box",
-    price: 8.99,
-    originalPrice: 10.99,
-    image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?w=400&h=400&fit=crop",
-    category: "Fruits",
-    rating: 4,
-  },
-  {
-    name: "Organic Carrots",
-    price: 2.99,
-    image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400&h=400&fit=crop",
-    category: "Vegetables",
-    rating: 5,
-  },
-  {
-    name: "Almond Milk",
-    price: 4.99,
-    image: "https://images.unsplash.com/photo-1600788886242-5c96aabe3757?w=400&h=400&fit=crop",
-    category: "Beverages",
-    rating: 4,
-  },
-  {
-    name: "Fresh Basil",
-    price: 2.49,
-    image: "https://images.unsplash.com/photo-1618164435735-413d3b066c9a?w=400&h=400&fit=crop",
-    category: "Herbs",
-    rating: 5,
-  },
-];
+import { useAuth } from "@/context/AuthContext";
+import { allProducts, categories, type Product } from "@/data/products";
 
 const FeaturedProducts = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const filtered = useMemo(() => {
+    let list = [...allProducts].slice(0, 8);
+    if (selectedCategory !== "all") {
+      list = allProducts.filter((p) => p.category === selectedCategory).slice(0, 8);
+    }
+    switch (sortBy) {
+      case "price-low":
+        list.sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        list.sort((a, b) => b.price - a.price);
+        break;
+      case "rating":
+        list.sort((a, b) => b.rating - a.rating);
+        break;
+    }
+    return list;
+  }, [selectedCategory, sortBy]);
+
+  if (!isAuthenticated) {
+    return (
+      <section id="shop" className="py-20 lg:py-32">
+        <div className="container mx-auto px-4 lg:px-8 text-center">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Sign in to explore our products
+          </h2>
+          <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
+            Login or create an account to browse our complete organic product collection
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button variant="hero" size="lg" onClick={() => navigate("/login")}>
+              Sign In
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => navigate("/signup")}>
+              Create Account
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="shop" className="py-20 lg:py-32">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-6">
           <div className="animate-fade-up">
             <span className="text-primary font-medium text-sm uppercase tracking-wider">
               Our Products
@@ -80,25 +73,66 @@ const FeaturedProducts = () => {
               Handpicked selection of our finest organic products, fresh from local farms
             </p>
           </div>
-          <Button variant="outline" size="lg" className="self-start md:self-auto">
+          <Button variant="outline" size="lg" className="self-start md:self-auto" onClick={() => navigate("/products")}>
             View All Products
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-8 items-center">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="price-low">Price: Low to High</SelectItem>
+              <SelectItem value="price-high">Price: High to Low</SelectItem>
+              <SelectItem value="rating">Highest Rated</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product, index) => (
+          {filtered.map((product, index) => (
             <div
-              key={product.name}
-              className="animate-fade-up"
+              key={product.id}
+              className="animate-fade-up cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => setSelectedProduct(product)}
             >
-              <ProductCard {...product} />
+              <ProductCard
+                name={product.name}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                image={product.image}
+                category={product.category}
+                rating={product.rating}
+                isOrganic={product.isOrganic}
+              />
             </div>
           ))}
         </div>
       </div>
+
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </section>
   );
 };
