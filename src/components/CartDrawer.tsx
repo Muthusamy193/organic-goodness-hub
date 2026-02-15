@@ -2,6 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -10,9 +11,15 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   const { cartItems, updateQuantity, removeItem, subtotal } = useCart();
+  const navigate = useNavigate();
 
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
+
+  const handleStartShopping = () => {
+    onClose();
+    navigate("/products");
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -29,44 +36,23 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             {/* Cart Items */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-4 p-4 bg-card rounded-xl shadow-soft"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-20 h-20 rounded-lg object-cover"
-                  />
+                <div key={item.id} className="flex gap-4 p-4 bg-card rounded-xl shadow-soft">
+                  <img src={item.image} alt={item.name} className="w-20 h-20 rounded-lg object-cover" />
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                      {item.category}
-                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">{item.category}</p>
                     <h4 className="font-semibold text-foreground">{item.name}</h4>
-                    <p className="text-primary font-bold mt-1">₹{item.price}</p>
-
+                    <p className="text-primary font-bold mt-1">₹{item.price.toFixed(0)}</p>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2 bg-secondary rounded-full">
-                        <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="w-8 h-8 flex items-center justify-center hover:bg-primary hover:text-primary-foreground rounded-full transition-colors"
-                        >
+                        <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center hover:bg-primary hover:text-primary-foreground rounded-full transition-colors">
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-8 text-center font-medium">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="w-8 h-8 flex items-center justify-center hover:bg-primary hover:text-primary-foreground rounded-full transition-colors"
-                        >
+                        <span className="w-8 text-center font-medium">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center hover:bg-primary hover:text-primary-foreground rounded-full transition-colors">
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-muted-foreground hover:text-destructive transition-colors p-2"
-                      >
+                      <button onClick={() => removeItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors p-2">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -98,13 +84,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                   <span className="text-primary">₹{total.toFixed(0)}</span>
                 </div>
               </div>
-
-              <Button variant="hero" size="xl" className="w-full">
-                Proceed to Checkout
-              </Button>
-              <Button variant="outline" size="lg" className="w-full" onClick={onClose}>
-                Continue Shopping
-              </Button>
+              <Button variant="hero" size="xl" className="w-full">Proceed to Checkout</Button>
+              <Button variant="outline" size="lg" className="w-full" onClick={onClose}>Continue Shopping</Button>
             </div>
           </>
         ) : (
@@ -113,10 +94,8 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
               <ShoppingBag className="w-10 h-10 text-muted-foreground" />
             </div>
             <h3 className="font-display text-xl font-semibold mb-2">Your cart is empty</h3>
-            <p className="text-muted-foreground mb-6">
-              Looks like you haven't added any products yet
-            </p>
-            <Button variant="hero" size="lg" onClick={onClose}>
+            <p className="text-muted-foreground mb-6">Looks like you haven't added any products yet</p>
+            <Button variant="hero" size="lg" onClick={handleStartShopping}>
               Start Shopping
             </Button>
           </div>
