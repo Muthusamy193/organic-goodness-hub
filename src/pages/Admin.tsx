@@ -1,26 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useProducts } from "@/context/ProductContext";
+import { useContent } from "@/context/ContentContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductFormModal from "@/components/admin/ProductFormModal";
+import ContentEditModal from "@/components/admin/ContentEditModal";
 import type { Product } from "@/data/products";
+import type { SectionContent } from "@/context/ContentContext";
 import {
   ArrowLeft, Package, Users, ShoppingCart, FileText,
   Plus, Edit, Trash2, BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 
+const USERS_KEY = "dhanam_users";
+
+interface StoredUser {
+  profile: { id: string; name: string; email: string; createdAt: string };
+  password: string;
+}
+
 const Admin = () => {
   const { isAuthenticated, user } = useAuth();
   const { products, addProduct, updateProduct, deleteProduct, totalProducts, totalCategories } = useProducts();
+  const { sections, updateSection } = useContent();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [contentModalOpen, setContentModalOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState<SectionContent | null>(null);
+  const [registeredUsers, setRegisteredUsers] = useState<StoredUser["profile"][]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(USERS_KEY);
+      if (raw) {
+        const users: Record<string, StoredUser> = JSON.parse(raw);
+        setRegisteredUsers(Object.values(users).map((u) => u.profile));
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   if (!isAuthenticated) {
     navigate("/login");
@@ -49,10 +73,15 @@ const Admin = () => {
     }
   };
 
+  const handleContentSave = (id: string, fields: SectionContent["fields"]) => {
+    updateSection(id, fields);
+    toast.success("Content updated successfully");
+  };
+
   const stats = [
     { label: "Total Products", value: totalProducts, icon: Package, color: "text-primary" },
     { label: "Categories", value: totalCategories, icon: BarChart3, color: "text-accent" },
-    { label: "Users", value: "—", icon: Users, color: "text-golden" },
+    { label: "Users", value: registeredUsers.length, icon: Users, color: "text-golden" },
     { label: "Orders", value: "—", icon: ShoppingCart, color: "text-leaf" },
   ];
 
@@ -91,10 +120,12 @@ const Admin = () => {
         <Tabs defaultValue="products">
           <TabsList className="mb-6">
             <TabsTrigger value="products"><Package className="w-4 h-4 mr-2" />Products</TabsTrigger>
+            <TabsTrigger value="users"><Users className="w-4 h-4 mr-2" />Users</TabsTrigger>
             <TabsTrigger value="content"><FileText className="w-4 h-4 mr-2" />Content</TabsTrigger>
             <TabsTrigger value="services"><BarChart3 className="w-4 h-4 mr-2" />Services</TabsTrigger>
           </TabsList>
 
+          {/* Products Tab */}
           <TabsContent value="products">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -136,7 +167,7 @@ const Admin = () => {
                           <td className="py-3 px-2">
                             <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full">{product.category}</span>
                           </td>
-                          <td className="py-3 px-2 font-medium">₹{(product.price * 83).toFixed(0)}</td>
+                          <td className="py-3 px-2 font-medium">₹{product.price.toFixed(2)}</td>
                           <td className="py-3 px-2"><span className="text-golden">{"★".repeat(product.rating)}</span></td>
                           <td className="py-3 px-2 text-right">
                             <div className="flex items-center justify-end gap-1">
@@ -157,18 +188,60 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          {/* Users Tab */}
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Registered Users ({registeredUsers.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {registeredUsers.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No registered users yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2 text-muted-foreground font-medium">#</th>
+                          <th className="text-left py-3 px-2 text-muted-foreground font-medium">Name</th>
+                          <th className="text-left py-3 px-2 text-muted-foreground font-medium">Email</th>
+                          <th className="text-left py-3 px-2 text-muted-foreground font-medium">Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {registeredUsers.map((u, i) => (
+                          <tr key={u.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                            <td className="py-3 px-2 text-muted-foreground">{i + 1}</td>
+                            <td className="py-3 px-2 font-medium">{u.name}</td>
+                            <td className="py-3 px-2">{u.email}</td>
+                            <td className="py-3 px-2 text-muted-foreground">
+                              {new Date(u.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Tab */}
           <TabsContent value="content">
             <Card>
               <CardHeader><CardTitle className="font-display text-xl">Manage Content</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {["Hero Section", "About Section", "Newsletter Section", "Footer"].map((section) => (
-                    <div key={section} className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                  {sections.map((section) => (
+                    <div key={section.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                       <div>
-                        <p className="font-medium">{section}</p>
-                        <p className="text-xs text-muted-foreground">Last updated: Today</p>
+                        <p className="font-medium">{section.label}</p>
+                        <p className="text-xs text-muted-foreground">{section.fields.length} editable fields</p>
                       </div>
-                      <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-1" />Edit</Button>
+                      <Button variant="outline" size="sm" onClick={() => { setEditingSection(section); setContentModalOpen(true); }}>
+                        <Edit className="w-4 h-4 mr-1" />Edit
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -176,6 +249,7 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          {/* Services Tab */}
           <TabsContent value="services">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -208,6 +282,12 @@ const Admin = () => {
         onClose={() => { setFormOpen(false); setEditingProduct(null); }}
         onSave={handleSave}
         product={editingProduct}
+      />
+      <ContentEditModal
+        isOpen={contentModalOpen}
+        onClose={() => { setContentModalOpen(false); setEditingSection(null); }}
+        section={editingSection}
+        onSave={handleContentSave}
       />
     </div>
   );
