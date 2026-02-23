@@ -6,19 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { allProducts, categories, type Product } from "@/data/products";
+import { useProducts } from "@/context/ProductContext";
+import type { Product } from "@/data/products";
 
 const FeaturedProducts = () => {
   const { isAuthenticated } = useAuth();
+  const { products, categories } = useProducts();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("default");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const filtered = useMemo(() => {
-    let list = [...allProducts].slice(0, 8);
+    let list = [...products].slice(0, 8);
     if (selectedCategory !== "all") {
-      list = allProducts.filter((p) => p.category === selectedCategory).slice(0, 8);
+      list = products.filter((p) => p.category === selectedCategory).slice(0, 8);
     }
     switch (sortBy) {
       case "price-low":

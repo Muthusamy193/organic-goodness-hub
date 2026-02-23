@@ -1,47 +1,63 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useProducts } from "@/context/ProductContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { allProducts } from "@/data/products";
+import ProductFormModal from "@/components/admin/ProductFormModal";
+import type { Product } from "@/data/products";
 import {
-  ArrowLeft,
-  Package,
-  Users,
-  ShoppingCart,
-  FileText,
-  Plus,
-  Edit,
-  Trash2,
-  BarChart3,
+  ArrowLeft, Package, Users, ShoppingCart, FileText,
+  Plus, Edit, Trash2, BarChart3,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const Admin = () => {
   const { isAuthenticated, user } = useAuth();
+  const { products, addProduct, updateProduct, deleteProduct, totalProducts, totalCategories } = useProducts();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   if (!isAuthenticated) {
     navigate("/login");
     return null;
   }
 
-  const filteredProducts = allProducts.filter((p) =>
+  const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleSave = (product: Product) => {
+    if (editingProduct) {
+      updateProduct(product.id, product);
+      toast.success("Product updated successfully");
+    } else {
+      addProduct(product);
+      toast.success("Product added successfully");
+    }
+    setEditingProduct(null);
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    if (confirm(`Delete "${name}"?`)) {
+      deleteProduct(id);
+      toast.success("Product deleted");
+    }
+  };
+
   const stats = [
-    { label: "Total Products", value: allProducts.length, icon: Package, color: "text-primary" },
-    { label: "Categories", value: new Set(allProducts.map((p) => p.category)).size, icon: BarChart3, color: "text-accent" },
+    { label: "Total Products", value: totalProducts, icon: Package, color: "text-primary" },
+    { label: "Categories", value: totalCategories, icon: BarChart3, color: "text-accent" },
     { label: "Users", value: "—", icon: Users, color: "text-golden" },
     { label: "Orders", value: "—", icon: ShoppingCart, color: "text-leaf" },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 lg:px-8 flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
@@ -50,9 +66,7 @@ const Admin = () => {
             </Button>
             <h1 className="font-display text-xl font-bold">Admin Dashboard</h1>
           </div>
-          <span className="text-sm text-muted-foreground">
-            Welcome, {user?.name}
-          </span>
+          <span className="text-sm text-muted-foreground">Welcome, {user?.name}</span>
         </div>
       </header>
 
@@ -74,30 +88,19 @@ const Admin = () => {
           ))}
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="products">
           <TabsList className="mb-6">
-            <TabsTrigger value="products">
-              <Package className="w-4 h-4 mr-2" />
-              Products
-            </TabsTrigger>
-            <TabsTrigger value="content">
-              <FileText className="w-4 h-4 mr-2" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="services">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Services
-            </TabsTrigger>
+            <TabsTrigger value="products"><Package className="w-4 h-4 mr-2" />Products</TabsTrigger>
+            <TabsTrigger value="content"><FileText className="w-4 h-4 mr-2" />Content</TabsTrigger>
+            <TabsTrigger value="services"><BarChart3 className="w-4 h-4 mr-2" />Services</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="font-display text-xl">Manage Products</CardTitle>
-                <Button variant="hero" size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Product
+                <Button variant="hero" size="sm" onClick={() => { setEditingProduct(null); setFormOpen(true); }}>
+                  <Plus className="w-4 h-4 mr-1" />Add Product
                 </Button>
               </CardHeader>
               <CardContent>
@@ -131,20 +134,16 @@ const Admin = () => {
                             </div>
                           </td>
                           <td className="py-3 px-2">
-                            <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full">
-                              {product.category}
-                            </span>
+                            <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full">{product.category}</span>
                           </td>
                           <td className="py-3 px-2 font-medium">₹{(product.price * 83).toFixed(0)}</td>
-                          <td className="py-3 px-2">
-                            <span className="text-golden">{"★".repeat(product.rating)}</span>
-                          </td>
+                          <td className="py-3 px-2"><span className="text-golden">{"★".repeat(product.rating)}</span></td>
                           <td className="py-3 px-2 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingProduct(product); setFormOpen(true); }}>
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(product.id, product.name)}>
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -160,9 +159,7 @@ const Admin = () => {
 
           <TabsContent value="content">
             <Card>
-              <CardHeader>
-                <CardTitle className="font-display text-xl">Manage Content</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="font-display text-xl">Manage Content</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {["Hero Section", "About Section", "Newsletter Section", "Footer"].map((section) => (
@@ -171,10 +168,7 @@ const Admin = () => {
                         <p className="font-medium">{section}</p>
                         <p className="text-xs text-muted-foreground">Last updated: Today</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4 mr-1" />
-                        Edit
-                      </Button>
+                      <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-1" />Edit</Button>
                     </div>
                   ))}
                 </div>
@@ -186,10 +180,7 @@ const Admin = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="font-display text-xl">Manage Services</CardTitle>
-                <Button variant="hero" size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Service
-                </Button>
+                <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" />Add Service</Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -200,12 +191,8 @@ const Admin = () => {
                         <p className="text-xs text-muted-foreground">Active</p>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
                   ))}
@@ -215,6 +202,13 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ProductFormModal
+        isOpen={formOpen}
+        onClose={() => { setFormOpen(false); setEditingProduct(null); }}
+        onSave={handleSave}
+        product={editingProduct}
+      />
     </div>
   );
 };
