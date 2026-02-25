@@ -28,6 +28,19 @@ const emptyProduct: Product = {
   isOrganic: true,
 };
 
+const transliterateTamil = (english: string): string => {
+  const map: Record<string, string> = {
+    "avocado": "வெண்ணெய்ப்பழம்", "spinach": "கீரை", "honey": "தேன்", "egg": "முட்டை",
+    "berry": "பெர்ரி", "carrot": "கேரட்", "milk": "பால்", "basil": "துளசி",
+    "turmeric": "மஞ்சள்", "coconut": "தேங்காய்", "oil": "எண்ணெய்", "jaggery": "வெல்லம்",
+    "millet": "சிறுதானியம்", "rice": "அரிசி", "organic": "இயற்கை", "fresh": "புதிய",
+    "powder": "தூள்", "mix": "கலவை", "pure": "தூய்மையான",
+  };
+  const lower = english.toLowerCase();
+  const tamilWords = lower.split(/\s+/).map(w => map[w] || w);
+  return tamilWords.join(" ");
+};
+
 const ProductFormModal = ({ isOpen, onClose, onSave, product }: Props) => {
   const [form, setForm] = useState<Product>(emptyProduct);
   const [ingredientsText, setIngredientsText] = useState("");
@@ -44,8 +57,10 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product }: Props) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.price <= 0) return;
     onSave({
       ...form,
+      nameTamil: form.nameTamil || transliterateTamil(form.name),
       ingredients: ingredientsText.split(",").map((s) => s.trim()).filter(Boolean),
     });
     onClose();
@@ -60,20 +75,17 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product }: Props) => {
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Name (English)</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Name (Tamil)</Label>
-              <Input value={form.nameTamil} onChange={(e) => setForm({ ...form, nameTamil: e.target.value })} required />
-            </div>
+          <div className="space-y-2">
+            <Label>Product Name</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, nameTamil: transliterateTamil(e.target.value) })} required />
+            {form.nameTamil && (
+              <p className="text-xs text-muted-foreground">Tamil: {form.nameTamil}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Price (₹)</Label>
-              <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} required />
+              <Input type="number" step="0.01" min="0.01" value={form.price || ""} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} required />
             </div>
             <div className="space-y-2">
               <Label>Original Price (₹, optional)</Label>
@@ -102,8 +114,8 @@ const ProductFormModal = ({ isOpen, onClose, onSave, product }: Props) => {
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
           </div>
           <div className="space-y-2">
-            <Label>Description (Tamil)</Label>
-            <Textarea value={form.descriptionTamil} onChange={(e) => setForm({ ...form, descriptionTamil: e.target.value })} />
+            <Label>Description (Tamil, auto-filled)</Label>
+            <Textarea value={form.descriptionTamil} onChange={(e) => setForm({ ...form, descriptionTamil: e.target.value })} placeholder="Auto-generated from English or type manually" />
           </div>
           <div className="space-y-2">
             <Label>Ingredients (comma-separated)</Label>

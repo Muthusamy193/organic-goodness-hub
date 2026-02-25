@@ -1,8 +1,16 @@
 import { ArrowRight, Truck, Shield, Leaf } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-organic.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section className="relative min-h-screen pt-20 lg:pt-0 overflow-hidden">
       {/* Background Pattern */}
@@ -35,11 +43,11 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-              <Button variant="hero" size="xl">
+              <Button variant="hero" size="xl" onClick={() => navigate("/products")}>
                 Shop Now
                 <ArrowRight className="w-5 h-5" />
               </Button>
-              <Button variant="outline" size="xl">
+              <Button variant="outline" size="xl" onClick={() => scrollToSection("about")}>
                 Learn More
               </Button>
             </div>
