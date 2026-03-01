@@ -25,7 +25,7 @@ interface StoredUser {
 }
 
 const Admin = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const { products, addProduct, updateProduct, deleteProduct, totalProducts, totalCategories } = useProducts();
   const { sections, updateSection } = useContent();
   const navigate = useNavigate();
@@ -46,8 +46,8 @@ const Admin = () => {
     } catch { /* ignore */ }
   }, []);
 
-  if (!isAuthenticated) {
-    navigate("/login");
+  if (!isAuthenticated || !isAdmin) {
+    navigate(isAuthenticated ? "/" : "/login");
     return null;
   }
 
