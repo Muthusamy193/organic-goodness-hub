@@ -10,9 +10,12 @@ export interface UserProfile {
   createdAt: string;
 }
 
+const ADMIN_EMAILS = ["admin@dhanam.com"];
+
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => boolean;
   signup: (name: string, email: string, password: string) => boolean;
   logout: () => void;
@@ -90,8 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const isAdmin = !!user && ADMIN_EMAILS.includes(user.email);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, signup, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAdmin, login, signup, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
